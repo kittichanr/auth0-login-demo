@@ -4,7 +4,7 @@ import CustomLoginForm from './CustomLoginForm'; // Will create this next
 import LogoutButton from './LogoutButton';
 import Profile from './Profile';
 import './App.css';
-import jwt_decode from 'jwt-decode'; // For decoding ID token
+import { jwtDecode } from 'jwt-decode'; // For decoding ID token
 
 // Helper to get token from localStorage
 const getToken = () => localStorage.getItem('id_token');
@@ -41,7 +41,7 @@ function App() {
       setIsAuthenticatedManually(true);
       if (!manualUser) { // If user is not in state, try to decode from token or get from storage
         try {
-          const decodedToken = jwt_decode(token);
+          const decodedToken = jwtDecode(token);
           // Basic user object from ID token. You might want more.
           const userFromToken = {
             name: decodedToken.name,
@@ -65,10 +65,10 @@ function App() {
   const handleCustomLoginSuccess = useCallback((idToken, accessToken) => {
     localStorage.setItem('id_token', idToken);
     // Optionally store access_token if needed for API calls outside of Auth0Provider context
-    // localStorage.setItem('access_token', accessToken);
+    localStorage.setItem('access_token', accessToken);
 
     try {
-      const decodedToken = jwt_decode(idToken);
+      const decodedToken = jwtDecode(idToken);
       const userProfile = {
         name: decodedToken.name,
         email: decodedToken.email,

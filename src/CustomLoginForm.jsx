@@ -1,13 +1,5 @@
 import React, { useState } from 'react';
-
-// Retrieve Auth0 config from main.jsx or environment variables
-// For simplicity, directly using placeholders here.
-// In a real app, you'd import these or use a config service.
-const AUTH0_DOMAIN = 'YOUR_AUTH0_DOMAIN'; // Replace!
-const AUTH0_CLIENT_ID = 'YOUR_AUTH0_CLIENT_ID'; // Replace!
-// This should be your API identifier or https://<your-domain>.auth0.com/userinfo
-const AUTH0_AUDIENCE = 'YOUR_AUTH0_AUDIENCE'; // Replace!
-
+import { auth0Config, validateAuth0Config } from './config/auth0.js';
 
 const CustomLoginForm = ({ onLoginSuccess }) => {
   const [email, setEmail] = useState('');
@@ -20,29 +12,26 @@ const CustomLoginForm = ({ onLoginSuccess }) => {
     setError('');
     setIsLoading(true);
 
-    if (AUTH0_DOMAIN === 'YOUR_AUTH0_DOMAIN' || AUTH0_CLIENT_ID === 'YOUR_AUTH0_CLIENT_ID' || AUTH0_AUDIENCE === 'YOUR_AUTH0_AUDIENCE') {
-      setError('Auth0 configuration is not set. Please replace placeholders in CustomLoginForm.jsx and main.jsx.');
+    if (!validateAuth0Config()) {
+      setError('Auth0 configuration is not set. Please check your .env file.');
       setIsLoading(false);
-      // In a real app, these would ideally come from a config that's checked earlier
-      // or from the Auth0Provider context if possible, though that's for SDK managed values.
-      alert('Critical Auth0 configuration missing in CustomLoginForm.jsx. Please check console and code.');
-      console.error('CustomLoginForm.jsx: Fill in AUTH0_DOMAIN, AUTH0_CLIENT_ID, and AUTH0_AUDIENCE');
+      alert('Critical Auth0 configuration missing. Please check your .env file.');
+      console.error('CustomLoginForm: Auth0 configuration is missing. Please check your .env file.');
       return;
     }
 
     const params = new URLSearchParams();
     params.append('grant_type', 'password');
-    params.append('client_id', AUTH0_CLIENT_ID);
+    params.append('client_id', auth0Config.clientId);
     params.append('username', email);
     params.append('password', password);
-    params.append('audience', AUTH0_AUDIENCE);
+    params.append('audience', auth0Config.audience);
     // Add scopes you need. 'openid profile email' are common for ID tokens.
     // If your API requires specific scopes for the access token, add them.
     params.append('scope', 'openid profile email');
 
-
     try {
-      const response = await fetch(`https://${AUTH0_DOMAIN}/oauth/token`, {
+      const response = await fetch(`https://${auth0Config.domain}/oauth/token`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
